@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/mainFragment">
+
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.example.github.repositories.MainFragment"
+        android:label="MainFragment" >
+        <action
+            android:id="@+id/action_mainFragment_to_detailFragment"
+            app:destination="@id/detailFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/detailFragment"
+        android:name="com.example.github.repositories.DetailFragment"
+        android:label="DetailFragment" >
+        <action
+            android:id="@+id/action_detailFragment_to_userFragment"
+            app:destination="@id/userFragment" />
+        <argument
+            android:name="repositoryDTO"
+            app:argType="com.example.github.repositories.data.RepositoryDTO" />
+    </fragment>
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="com.example.github.repositories.UserFragment"
+        android:label="UserFragment" >
+        <action
+            android:id="@+id/action_userFragment_to_detailFragment"
+            app:destination="@id/detailFragment" />
+        <argument
+            android:name="ownerDTO"
+            app:argType="com.example.github.repositories.data.OwnerDTO" />
+    </fragment>
+</navigation>

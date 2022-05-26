@@ -1,11 +1,15 @@
 package com.example.github.repositories.data
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
 data class Response(
     val total_count: String,
     val incomplete_results: Boolean,
     val items: MutableList<RepositoryDTO>
 )
 
+@Parcelize
 data class OwnerDTO(
     var login: String,
     var id: Int,
@@ -25,16 +29,18 @@ data class OwnerDTO(
     var received_events_url: String,
     var type: String,
     var site_admin: Boolean
-)
+) : Parcelable
 
+@Parcelize
 data class LicenseDTO(
     var key: String,
     var name: String,
     var spdx_id: String,
     var url: String,
     var node_id: String
-)
+) : Parcelable
 
+@Parcelize
 data class RepositoryDTO(
     var id: Int?,
     var node_id: String?,
@@ -114,7 +120,7 @@ data class RepositoryDTO(
     var watchers: Int?,
     var default_branch: String?,
     var score: Int?
-)
+) : Parcelable
 
 data class UserDTO(
     var login: String?,

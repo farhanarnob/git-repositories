@@ -6,9 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.github.repositories.data.RepositoryDTO
 
 class MainFragment : Fragment() {
 
@@ -32,8 +35,17 @@ class MainFragment : Fragment() {
         recyclerview = view.findViewById(R.id.news_list)
         recyclerview!!.layoutManager = LinearLayoutManager(context)
 
-        viewModel.repositories.observeForever {
-            val adapter = RepositoryAdapter(it.take(20).toMutableList(), requireActivity())
+        viewModel.repositories.observe(viewLifecycleOwner) {
+            val adapter = RepositoryAdapter(it.take(20).toMutableList(),
+                object :RepositoryAdapter.RepositoryAdapterItemListener{
+                override fun detailItemClick(repositoryDTO: RepositoryDTO) {
+                    lifecycleScope.launchWhenResumed {
+                        val directions = MainFragmentDirections.actionMainFragmentToDetailFragment(repositoryDTO)
+                        findNavController().navigate(directions)
+                    }
+                }
+
+            })
             recyclerview!!.adapter = adapter
         }
         return view

@@ -8,11 +8,14 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.example.github.repositories.data.LocalDataStore
 import com.example.github.repositories.data.RepositoryDTO
 import com.squareup.picasso.Picasso
 
-class DetailFragment(private val repository: RepositoryDTO) : Fragment() {
+class DetailFragment: Fragment() {
 
     private var title: TextView? = null
     private var image: ImageView? = null
@@ -20,7 +23,8 @@ class DetailFragment(private val repository: RepositoryDTO) : Fragment() {
     private var description: TextView? = null
     private var url: TextView? = null
 
-    @SuppressLint("SetTextI18n")
+    private val args: DetailFragmentArgs by navArgs()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -33,8 +37,10 @@ class DetailFragment(private val repository: RepositoryDTO) : Fragment() {
         description = view.findViewById(R.id.description)
         url = view.findViewById(R.id.url)
 
+        val repository = args.repositoryDTO
         title!!.text = repository.name
-        detail!!.text = "Created by " + repository.owner!!.login + ", at " + repository.created_at
+        detail!!.text = String.format("Created by "
+                + repository.owner!!.login + ", at " + repository.created_at)
         Picasso.get().load(repository.owner!!.avatar_url).into(image)
         description!!.text = repository.description
         url!!.text = repository.html_url
@@ -51,11 +57,11 @@ class DetailFragment(private val repository: RepositoryDTO) : Fragment() {
             image!!.setImageResource(if (!isBookmarked) R.drawable.baseline_bookmark_black_24 else R.drawable.baseline_bookmark_border_black_24)
         }
         detail!!.setOnClickListener {
-            requireActivity().supportFragmentManager
-                .beginTransaction()
-                .add(android.R.id.content, UserFragment(repository.owner!!))
-                .addToBackStack("user")
-                .commit()
+            lifecycleScope.launchWhenResumed {
+                findNavController().navigate(DetailFragmentDirections.actionDetailFragmentToUserFragment(
+                    repository.owner!!
+                ))
+            }
         }
         return view
     }
