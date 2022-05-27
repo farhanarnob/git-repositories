@@ -8,26 +8,42 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.github.repositories.data.LocalDataStore
 import com.example.github.repositories.data.RepositoryDTO
 
 class RepositoryAdapter(
-    val list: List<RepositoryDTO>,
     val repositoryAdapterItemListener: RepositoryAdapterItemListener
-) : RecyclerView.Adapter<RepositoryAdapter.ViewHolder>() {
-
-    override fun getItemCount(): Int = list.size
-
+) : ListAdapter<RepositoryDTO, RepositoryAdapter.ViewHolder>(DiffCallback())  {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item, parent, false)
         return ViewHolder(view)
     }
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bindData()
+        holder.bindData(getItem(position))
     }
+    private class DiffCallback : DiffUtil.ItemCallback<RepositoryDTO>() {
+        override fun areItemsTheSame(
+            oldItem: RepositoryDTO,
+            newItem: RepositoryDTO,
+        ): Boolean {
+            if (oldItem.id != newItem.id) return false
+            // check if id is the same
+            return oldItem.id == newItem.id
+        }
 
+        @SuppressLint("DiffUtilEquals")
+        override fun areContentsTheSame(
+            oldItem: RepositoryDTO,
+            newItem: RepositoryDTO,
+        ): Boolean {
+            // check if content is the same
+            // equals using data class
+            return oldItem == newItem
+        }
+    }
     inner class ViewHolder(ItemView: View) : RecyclerView.ViewHolder(ItemView) {
         val container: View = itemView.findViewById(R.id.news_container)
         val titleTxt: TextView = itemView.findViewById(R.id.title)
@@ -36,8 +52,7 @@ class RepositoryAdapter(
         val authorTxt: TextView = itemView.findViewById(R.id.author)
 
         @SuppressLint("SetTextI18n")
-        fun bindData() {
-            val item = list[adapterPosition]
+        fun bindData(item: RepositoryDTO) {
             titleTxt.text = "#" + (position + 1) + ": " + item.full_name!!.toUpperCase()
             descriptionTxt.text = if (item.description!!.length > 150) item.description!!.take(150)
                 .plus("...") else item.description
@@ -50,12 +65,6 @@ class RepositoryAdapter(
             )
             container.setOnClickListener {
                 repositoryAdapterItemListener.detailItemClick(item)
-//                activity.lifecycleScope.launchWhenResumed {  }
-//                activity.supportFragmentManager
-//                    .beginTransaction()
-//                    .add(android.R.id.content, DetailFragment(item))
-//                    .addToBackStack("detail")
-//                    .commit()
             }
         }
     }

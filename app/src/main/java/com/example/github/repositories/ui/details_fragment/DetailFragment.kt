@@ -1,6 +1,5 @@
-package com.example.github.repositories
+package com.example.github.repositories.ui.details_fragment
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,8 +10,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.github.repositories.R
 import com.example.github.repositories.data.LocalDataStore
-import com.example.github.repositories.data.RepositoryDTO
 import com.squareup.picasso.Picasso
 
 class DetailFragment: Fragment() {
