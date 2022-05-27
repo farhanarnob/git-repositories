@@ -51,12 +51,12 @@ class RepositoryAdapter(
         val descriptionTxt: TextView = itemView.findViewById(R.id.description)
         val authorTxt: TextView = itemView.findViewById(R.id.author)
 
-        @SuppressLint("SetTextI18n")
         fun bindData(item: RepositoryDTO) {
-            titleTxt.text = "#" + (position + 1) + ": " + item.full_name!!.toUpperCase()
-            descriptionTxt.text = if (item.description!!.length > 150) item.description!!.take(150)
-                .plus("...") else item.description
-            authorTxt.text = item.owner!!.login
+            titleTxt.text = String.format("#" + (adapterPosition + 1)
+                    + ": " + item.full_name?.uppercase())
+            descriptionTxt.text = item.description?.let {
+                if (it.length> 150) it.take(150).plus("...") else it }?: "N/A"
+            authorTxt.text = item.owner?.login?:"N/A"
             imageVw.setImageResource(
                 if (LocalDataStore.instance.getBookmarks().contains(item))
                     R.drawable.baseline_bookmark_black_24
