@@ -1,9 +1,20 @@
 package com.example.github.repositories.data
 
+import com.example.github.repositories.repo.GitDownloadRepository
+
 class LocalDataStore private constructor() {
 
     companion object {
-        val instance = LocalDataStore()
+        @Volatile
+        private var instance: LocalDataStore? = null
+        fun getInstance(): LocalDataStore {
+            return instance ?: synchronized(LocalDataStore::class.java) {
+                if (instance == null) {
+                    instance = LocalDataStore()
+                }
+                return instance!!
+            }
+        }
     }
 
     private val bookmarks = mutableMapOf<Int, RepositoryDTO>()

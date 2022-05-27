@@ -41,7 +41,7 @@ class UserFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         uiSetup()
         observe()
-        viewModel.fetchUser(args.ownerDTO.login)
+        viewModel.fetchUser(args.ownerDTO?.login)
     }
 
     private fun observe() {
@@ -62,8 +62,8 @@ class UserFragment: Fragment() {
     }
 
     private fun uiSetup() {
-        binding.title.text = args.ownerDTO.login
-        Picasso.get().load(args.ownerDTO.avatar_url?.toUri()).into(binding.image)
+        binding.title.text = args.ownerDTO?.login?:"N/A"
+        Picasso.get().load(args.ownerDTO?.avatar_url?.toUri()).into(binding.image)
         binding.list.layoutManager = LinearLayoutManager(context)
         adapter = RepositoryAdapter(
             object : RepositoryAdapter.RepositoryAdapterItemListener {
