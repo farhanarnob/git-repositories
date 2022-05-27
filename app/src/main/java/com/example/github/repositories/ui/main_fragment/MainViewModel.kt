@@ -1,21 +1,19 @@
 package com.example.github.repositories.ui.main_fragment
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.example.github.repositories.data.*
 import com.example.github.repositories.repo.GitDownloadRepository
 import kotlinx.coroutines.*
 
 class MainViewModel : ViewModel() {
     val gitDownloadRepository = GitDownloadRepository.getInstance()
-    val networkScope = CoroutineScope(Dispatchers.IO)
+    val gitDownloadRepositoryScope = CoroutineScope(Dispatchers.IO)
     val repositories = gitDownloadRepository.gitHubRepoListFlow.asLiveData()
-    val error = gitDownloadRepository.repositoryError.asLiveData()
+    val error = gitDownloadRepository.repositoryNetworkFetchError.asLiveData()
 
     fun fetchItems() {
-        networkScope.coroutineContext.cancelChildren()
-        networkScope.launch {
+        gitDownloadRepositoryScope.coroutineContext.cancelChildren()
+        gitDownloadRepositoryScope.launch {
             delay(1_000)
             gitDownloadRepository.executeSearchRepositories()
         }
@@ -26,8 +24,8 @@ class MainViewModel : ViewModel() {
     }
 
     fun refresh() {
-        networkScope.coroutineContext.cancelChildren()
-        networkScope.launch {
+        gitDownloadRepositoryScope.coroutineContext.cancelChildren()
+        gitDownloadRepositoryScope.launch {
             delay(1_000)
             gitDownloadRepository.executeSearchRepositories()
         }

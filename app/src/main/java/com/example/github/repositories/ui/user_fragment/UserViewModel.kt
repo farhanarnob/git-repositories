@@ -1,34 +1,36 @@
 package com.example.github.repositories.ui.user_fragment
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.github.repositories.data.GITHUB_URL
-import com.example.github.repositories.data.GitHubEndpoints
-import com.example.github.repositories.data.RepositoryDTO
-import com.example.github.repositories.data.UserDTO
+import androidx.lifecycle.asLiveData
+import com.example.github.repositories.repo.GitDownloadRepository
 import kotlinx.coroutines.*
 
 class UserViewModel : ViewModel() {
 
-//    private val service: GitHubEndpoints = retrofit.create(GitHubEndpoints::class.java)
+    val gitDownloadRepositoryScope = CoroutineScope(Dispatchers.IO)
+    val fetchUserScope = CoroutineScope(Dispatchers.IO)
 
-    val user = MutableLiveData<UserDTO>()
-    val repositories = MutableLiveData<List<RepositoryDTO>>()
+    val gitDownloadRepository = GitDownloadRepository.getInstance()
 
-    fun fetchUser(username: String) {
-        // FIXME Use the proper scope
-        GlobalScope.launch(Dispatchers.IO) {
-            delay(1_000) // This is to simulate network latency, please don't remove!
-//            val response = service.getUser(username).execute()
-//            user.postValue(response.body()!!)
+    val repositories = gitDownloadRepository.gitHubRepoListFlow.asLiveData()
+    val repositoryNetworkFetchError = gitDownloadRepository.repositoryNetworkFetchError.asLiveData()
+    val getUserNetworkFetchError = gitDownloadRepository.getUserNetworkFetchError.asLiveData()
+
+    val user = gitDownloadRepository.getUserFlow.asLiveData()
+
+    fun fetchUser(username: String?) {
+        fetchUserScope.coroutineContext.cancelChildren()
+        fetchUserScope.launch {
+            delay(1_000)// This is to simulate network latency, please don't remove!
+            gitDownloadRepository.executeGetUser(username)
         }
     }
 
     fun fetchRepositories(reposUrl: String) {
-        GlobalScope.launch(Dispatchers.IO) {
-            delay(1_000) // This is to simulate network latency, please don't remove!
-//            val response = service.getUserRepositories(reposUrl).execute()
-//            repositories.postValue(response.body()!!)
+        gitDownloadRepositoryScope.coroutineContext.cancelChildren()
+        gitDownloadRepositoryScope.launch {
+            delay(1_000)// This is to simulate network latency, please don't remove!
+            gitDownloadRepository.executeGetUserRepositories(reposUrl)
         }
     }
 }

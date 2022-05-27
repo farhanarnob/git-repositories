@@ -7,54 +7,74 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.net.toUri
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.github.repositories.R
+import com.example.github.repositories.RepositoryAdapter
+import com.example.github.repositories.data.RepositoryDTO
+import com.example.github.repositories.databinding.FragmentDetailBinding
+import com.example.github.repositories.databinding.FragmentMainBinding
+import com.example.github.repositories.databinding.FragmentUserBinding
+import com.example.github.repositories.ui.main_fragment.MainFragmentDirections
 import com.squareup.picasso.Picasso
 
 class UserFragment: Fragment() {
-
+    private var adapter: RepositoryAdapter? = null
     private val viewModel = UserViewModel()
-
-    private var title: TextView? = null
-    private var image: ImageView? = null
-    private var detail: TextView? = null
-    private var url: TextView? = null
-    private var list: RecyclerView? = null
-
+    private lateinit var binding: FragmentUserBinding
     private val args: UserFragmentArgs by navArgs()
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_user, container, false)
-        title = view.findViewById(R.id.title)
-        image = view.findViewById(R.id.image)
-        detail = view.findViewById(R.id.detail)
-        url = view.findViewById(R.id.url)
-        list = view.findViewById(R.id.list)
-        val user = args.ownerDTO
-        title!!.text = user.login
-        Picasso.get().load(user.avatar_url.toUri()).into(image)
+        binding = DataBindingUtil.inflate(inflater, R.layout.fragment_user,container,false)
+        return binding.root
+    }
 
-        viewModel.fetchUser(user.login)
-        viewModel.user.observeForever {
-            detail!!.text = String.format("Twitter handle: " + it.twitter_username)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        uiSetup()
+        observe()
+        viewModel.fetchUser(args.ownerDTO.login)
+    }
+
+    private fun observe() {
+        viewModel.repositories.observe(viewLifecycleOwner){
+            adapter?.submitList(it)
+        }
+        viewModel.user.observe(viewLifecycleOwner) {
+            binding.detail.text = String.format("Twitter handle: ${it.twitter_username?:"N/A"}")
             viewModel.fetchRepositories(it.repos_url!!)
         }
-//        viewModel.repositories.observeForever {
-//            list!!.adapter = RepositoryAdapter(it.toMutableList(),
-//                object :RepositoryAdapter.RepositoryAdapterItemListener{
-//                override fun detailItemClick(repositoryDTO: RepositoryDTO) {
-//                    lifecycleScope.launchWhenResumed {
-//                        findNavController().navigate(UserFragmentDirections.actionUserFragmentToDetailFragment(repositoryDTO))
-//                    }
-//                }
-//
-//            })
-//        }
-        return view
+        viewModel.repositoryNetworkFetchError.observe(viewLifecycleOwner){
+
+        }
+
+        viewModel.getUserNetworkFetchError.observe(viewLifecycleOwner){
+
+        }
+    }
+
+    private fun uiSetup() {
+        binding.title.text = args.ownerDTO.login
+        Picasso.get().load(args.ownerDTO.avatar_url?.toUri()).into(binding.image)
+        binding.list.layoutManager = LinearLayoutManager(context)
+        adapter = RepositoryAdapter(
+            object : RepositoryAdapter.RepositoryAdapterItemListener {
+                override fun detailItemClick(repositoryDTO: RepositoryDTO) {
+                    lifecycleScope.launchWhenResumed {
+                        val directions = UserFragmentDirections
+                            .actionUserFragmentToDetailFragment(repositoryDTO)
+                        findNavController().navigate(directions)
+                    }
+                }
+            })
+        binding.list.adapter = adapter
     }
 }

@@ -32,21 +32,21 @@ interface GitHubRepoApiService {
 
     @GET(search_repositories)
     suspend fun searchRepositories(
-        @Query("q") q: String,
-        @Query("sort") sort: String,
-        @Query("order") order: String
+        @Query("q") q: String?,
+        @Query("sort") sort: String?,
+        @Query("order") order: String?
     ): Response?
 
 
     @GET("users/{username}")
     suspend fun getUser(
-        @Path("username") username: String
+        @Path("username") username: String?
     ): UserDTO?
 
 
     @GET
     suspend fun getUserRepositories(
-        @Url userRepo: String
+        @Url userRepo: String?
     ): MutableList<RepositoryDTO>?
 
 }
