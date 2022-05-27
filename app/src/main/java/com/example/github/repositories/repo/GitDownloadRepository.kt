@@ -8,10 +8,10 @@ class GitDownloadRepository private constructor(
 ) {
 
     private val _repositoryNetworkFetchError = MutableSharedFlow<String?>()
-    val repositoryNetworkFetchError = _repositoryNetworkFetchError.conflate()
+    val repositoryNetworkFetchError = _repositoryNetworkFetchError.asSharedFlow()
 
     private val _getUserNetworkFetchError = MutableSharedFlow<String?>()
-    val getUserNetworkFetchError = _getUserNetworkFetchError.conflate()
+    val getUserNetworkFetchError = _getUserNetworkFetchError.asSharedFlow()
 
     val gitHubRepoListFlow get() = _gitHubRepoListFlow.filterNotNull()
     private val _gitHubRepoListFlow = MutableSharedFlow<MutableList<RepositoryDTO>?>()
@@ -35,7 +35,11 @@ class GitDownloadRepository private constructor(
     suspend fun executeSearchRepositories(){
         try {
             val response = GitHubRepoApi.retrofitService.searchRepositories(QUERY, SORT, ORDER)
-            _gitHubRepoListFlow.emit(response?.items)
+            if(!response?.items.isNullOrEmpty()){
+                _gitHubRepoListFlow.emit(response?.items)
+            }else{
+                _repositoryNetworkFetchError.emit("No repository found")
+            }
         }catch (e: Exception){
             _repositoryNetworkFetchError.emit(e.message)
         }
@@ -44,7 +48,11 @@ class GitDownloadRepository private constructor(
     suspend fun executeGetUserRepositories(userRepo: String){
         try {
             val response = GitHubRepoApi.retrofitService.getUserRepositories(userRepo)
-            _gitHubRepoListFlow.emit(response)
+            if(!response.isNullOrEmpty()){
+                _gitHubRepoListFlow.emit(response)
+            }else{
+                _repositoryNetworkFetchError.emit("No repository found")
+            }
         }catch (e: Exception){
             _repositoryNetworkFetchError.emit(e.message)
         }

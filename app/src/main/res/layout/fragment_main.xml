@@ -16,5 +16,10 @@
                 android:background="#ECEFF1"
                 android:id="@+id/news_list"/>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        <include
+            android:id="@+id/empty_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            layout="@layout/empty_list"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

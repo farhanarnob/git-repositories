@@ -9,7 +9,6 @@ class MainViewModel : ViewModel() {
     val gitDownloadRepository = GitDownloadRepository.getInstance()
     val gitDownloadRepositoryScope = CoroutineScope(Dispatchers.IO)
     val repositories = gitDownloadRepository.gitHubRepoListFlow.asLiveData()
-    val error = gitDownloadRepository.repositoryNetworkFetchError.asLiveData()
 
     fun fetchItems() {
         gitDownloadRepositoryScope.coroutineContext.cancelChildren()
