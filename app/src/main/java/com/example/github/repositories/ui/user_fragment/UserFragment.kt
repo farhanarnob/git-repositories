@@ -4,23 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.core.net.toUri
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.github.repositories.R
 import com.example.github.repositories.RepositoryAdapter
 import com.example.github.repositories.data.RepositoryDTO
-import com.example.github.repositories.databinding.FragmentDetailBinding
-import com.example.github.repositories.databinding.FragmentMainBinding
 import com.example.github.repositories.databinding.FragmentUserBinding
-import com.example.github.repositories.ui.main_fragment.MainFragmentDirections
 import com.squareup.picasso.Picasso
 
 class UserFragment: Fragment() {
@@ -41,27 +36,32 @@ class UserFragment: Fragment() {
         super.onViewCreated(view, savedInstanceState)
         uiSetup()
         observe()
+        loadingState(loading = true)
         viewModel.fetchUser(args.ownerDTO?.login)
     }
 
     private fun observe() {
-        viewModel.repositories.observe(viewLifecycleOwner){
-            adapter?.submitList(it)
-        }
         viewModel.user.observe(viewLifecycleOwner) {
             binding.detail.text = String.format("Twitter handle: ${it.twitter_username?:"N/A"}")
             viewModel.fetchRepositories(it.repos_url!!)
         }
-        viewModel.repositoryNetworkFetchError.observe(viewLifecycleOwner){
-
+        viewModel.repositories.observe(viewLifecycleOwner){
+            adapter?.submitList(it)
+            loadingState(loading = false)
+        }
+        viewModel.gitDownloadRepository.networkFetchError.asLiveData().observe(viewLifecycleOwner){
+            adapter?.submitList(null)
+            loadingState(loading = false)
+            errorState(it)
         }
 
-        viewModel.getUserNetworkFetchError.observe(viewLifecycleOwner){
-
-        }
     }
 
     private fun uiSetup() {
+        binding.emptyLayout.btnFromEmptyTry.setOnClickListener {
+            loadingState(loading = true)
+            viewModel.fetchUser(args.ownerDTO?.login)
+        }
         binding.title.text = args.ownerDTO?.login?:"N/A"
         Picasso.get().load(args.ownerDTO?.avatar_url?.toUri()).into(binding.image)
         binding.list.layoutManager = LinearLayoutManager(context)
@@ -76,5 +76,32 @@ class UserFragment: Fragment() {
                 }
             })
         binding.list.adapter = adapter
+    }
+
+    private fun loadingState(loading: Boolean){
+        val loadingVisibilityView = if(loading)View.VISIBLE else View.GONE
+        val loadingGoneView = View.GONE
+        lifecycleScope.launchWhenResumed {
+            binding.emptyLayout.emptyParentLayout.visibility = loadingVisibilityView
+            binding.emptyLayout.pbWaiting.visibility = loadingVisibilityView
+            binding.emptyLayout.textNotifications.visibility = loadingVisibilityView
+            binding.emptyLayout.textNotifications.text = getString(R.string.loading_please_wait)
+            if(loading) {
+                binding.emptyLayout.btnFromEmptyTry.visibility = loadingGoneView
+                binding.emptyLayout.imageView3.visibility = loadingGoneView
+            }
+        }
+    }
+
+
+    private fun errorState(message: String?) {
+        lifecycleScope.launchWhenResumed {
+            binding.emptyLayout.pbWaiting.visibility = View.GONE
+            binding.emptyLayout.emptyParentLayout.visibility = View.VISIBLE
+            binding.emptyLayout.textNotifications.visibility = View.VISIBLE
+            binding.emptyLayout.btnFromEmptyTry.visibility = View.VISIBLE
+            binding.emptyLayout.imageView3.visibility = View.VISIBLE
+            binding.emptyLayout.textNotifications.text = message
+        }
     }
 }

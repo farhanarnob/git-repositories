@@ -13,8 +13,6 @@ class UserViewModel : ViewModel() {
     val gitDownloadRepository = GitDownloadRepository.getInstance()
 
     val repositories = gitDownloadRepository.gitHubRepoListFlow.asLiveData()
-    val repositoryNetworkFetchError = gitDownloadRepository.repositoryNetworkFetchError.asLiveData()
-    val getUserNetworkFetchError = gitDownloadRepository.getUserNetworkFetchError.asLiveData()
 
     val user = gitDownloadRepository.getUserFlow.asLiveData()
 
@@ -26,7 +24,7 @@ class UserViewModel : ViewModel() {
         }
     }
 
-    fun fetchRepositories(reposUrl: String) {
+    fun fetchRepositories(reposUrl: String?) {
         gitDownloadRepositoryScope.coroutineContext.cancelChildren()
         gitDownloadRepositoryScope.launch {
             delay(1_000)// This is to simulate network latency, please don't remove!

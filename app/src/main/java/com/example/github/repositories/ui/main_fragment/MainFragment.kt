@@ -1,7 +1,6 @@
 package com.example.github.repositories.ui.main_fragment
 
 import android.annotation.SuppressLint
-import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -51,7 +50,7 @@ class MainFragment : Fragment() {
             loadingState(loading = false)
         }
         viewModel.gitDownloadRepository
-            .repositoryNetworkFetchError.asLiveData().observe(viewLifecycleOwner){
+            .networkFetchError.asLiveData().observe(viewLifecycleOwner){
             if(binding.swipeRefresh.isRefreshing){
                 binding.swipeRefresh.isRefreshing = false
             }
