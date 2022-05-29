@@ -11,6 +11,7 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.github.repositories.IdlingResource.EspressoIdlingResource
 import com.example.github.repositories.R
 import com.example.github.repositories.RepositoryAdapter
 import com.example.github.repositories.data.RepositoryDTO
@@ -38,6 +39,7 @@ class MainFragment : Fragment() {
         uiSetup()
         observe()
         loadingState(loading = true)
+        EspressoIdlingResource.increment()
         viewModel.fetchItems()
     }
 
@@ -48,6 +50,7 @@ class MainFragment : Fragment() {
             }
             adapter?.submitList(it?.take(20))
             loadingState(loading = false)
+            EspressoIdlingResource.decrement()
         }
         viewModel.gitDownloadRepository
             .networkFetchError.asLiveData().observe(viewLifecycleOwner){
